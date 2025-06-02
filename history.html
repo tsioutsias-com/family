@@ -1,0 +1,106 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Family History</title>
+<style>
+    body {
+      background: #111;
+      color: #fff;
+      font-family: Georgia, serif;
+      padding: 2em;
+    }
+    nav {
+      margin-bottom: 2em;
+    }
+    nav a {
+      color: #9ddcff;
+      margin-right: 1em;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    nav a:hover {
+      text-decoration: underline;
+    }
+    .content {
+      max-width: 800px;
+      margin: auto;
+      line-height: 1.6;
+    }
+    .flag-toggle {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+    }
+    .flag-toggle button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.8em;
+    }
+  </style>
+<link href="favicon.ico" rel="icon" type="image/x-icon"/></head>
+<body>
+<div class="flag-toggle">
+<button onclick="toggleLanguage()">
+<span id="flag-icon">🇬🇷</span>
+</button>
+</div>
+
+<nav style="background: #2e2e2e; padding: 1em; display: flex; justify-content: center;">
+<a href="index.html" style="margin: 0 1em; color: #9ddcff; text-decoration: none; font-weight: bold;">Home</a>
+<a href="history.html" style="margin: 0 1em; color: #9ddcff; text-decoration: none; font-weight: bold;">Family History</a>
+<a href="tree.html" style="margin: 0 1em; color: #9ddcff; text-decoration: none; font-weight: bold;">Family Tree</a>
+</nav>
+
+<div class="content">
+<h2>Family History</h2>
+<div id="greek-text">
+<p>ΤΑ ΤΡΙΑ ΑΔΕΛΦΙΑ ΤΣΙΟΥΤΣΙΑΣ η ΚΑΣΙΜΗΣ</p>
+<p>Τους καλεσε ο αγας να πανε στο σπιτι του στο καστρο του Μηλα.</p>
+<p>Πηγε μονο ο πρωτος και ο δευτερος. Τους επιασε ο αγας και τους εβγαλε απο μια σφερτσα απο το σβερκο εως την ουρα και τους αφησε.</p>
+<p>Ο πρωτος αδελφος πεθανε απο αιμοραγια πριν φτασει στο Κουβελα οπου ζουσαν.</p>
+<p>Ο δευτερος δεν πεθανε απο αυτο, αλλα απο μολυνση. Τον δαγκωσε ενας αγριογατος χρονια αργοτερα οταν κουβαλαγε μια αγελαδα που ειχε κλεψει και σταθηκε να πιει νερο σε μια πηγη. (απο αυτο καταγεται ο Γιωργακης ο κοντοβουνισιος)</p>
+<p>Ο τριτος αδελφος κοντος και γεροδεμενος σκοτωσε τον αγα για εκδικηση. Απο αυτον καταγομαστε εμεις.</p>
+</div>
+<div id="english-text" style="display: none;">
+<p>The three brothers, Tsioutsias or Kasimis, were summoned by the Aga to his home at the castle of Mila.</p>
+<p>Only the first and second went. The Aga captured them and dragged each by a hook from their neck to their back and let them go.</p>
+<p>The first brother died from bleeding before reaching Kouvella, where they lived.</p>
+<p>The second did not die then, but years later from an infection after being bitten by a wildcat while carrying a stolen cow. (From him descends Giorgakis the "Kontovounisios")</p>
+<p>The third brother, short and stocky, took revenge by killing the Aga. We are descended from him.</p>
+</div>
+<div style="display: flex; justify-content: center; margin-top: 3em;">
+<img alt="Family History Comic Strip" src="family_history_comic.png" style="
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
+    -webkit-mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
+    box-shadow: 0 0 20px rgba(255,255,255,0.1);
+  "/>
+</div>
+</div>
+<script>
+  let currentLang = 'gr';
+  function toggleLanguage() {
+    const greek = document.getElementById('greek-text');
+    const english = document.getElementById('english-text');
+    const icon = document.getElementById('flag-icon');
+    if (currentLang === 'gr') {
+      greek.style.display = 'none';
+      english.style.display = 'block';
+      icon.textContent = '🇬🇷';  // Show Greek flag when English text is active
+      currentLang = 'en';
+    } else {
+      greek.style.display = 'block';
+      english.style.display = 'none';
+      icon.textContent = '🇺🇸';  // Show US flag when Greek text is active
+      currentLang = 'gr';
+    }
+  }
+</script>
+</body>
+</html>

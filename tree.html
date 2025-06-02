@@ -1,0 +1,435 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Simulated Family Echo Tree (Aligned)</title>
+<style>
+    body {
+      background: #000;
+      font-family: sans-serif;
+      color: white;
+      margin: 0;
+    }
+    .banner {
+      background: #111;
+      color: #fff;
+      font-family: monospace;
+      font-size: 13px;
+      white-space: pre-wrap;
+      padding: 10px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 999;
+    }
+    .tree {
+  min-width: 6000px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px;
+    }
+    .node-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .children {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    .person {
+      background: #2c2c2c;
+      border: 1px solid #888;
+      border-radius: 6px;
+      padding: 6px 12px;
+      margin: 8px;
+      text-align: center;
+      color: white;
+      cursor: pointer;
+      min-width: 150px;
+    }
+    .person.male {
+      background-color: #2a3d7a;
+    }
+    .person.female {
+      background-color: #7a2a4d;
+    }
+    .children-container {
+      display: none;
+    }
+    .person.expanded + .children-container {
+      display: flex;
+    }
+  
+#treeWrapper {
+  overflow-x: auto;
+  overflow-y: auto;
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  height: 100vh;
+}
+
+#treeWrapper {
+  position: absolute;
+  top: 160px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+  align-items: start;
+}
+
+.tree {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: start;
+  margin-top: 20px;
+  min-width: 400px;
+}
+
+#treeWrapper {
+  position: absolute;
+  top: 160px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: auto;
+  display: block;
+}
+
+#treeContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100%;
+  min-width: 100%;
+  position: relative;
+}
+
+#treeLines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+#treeWrapper {
+  display: block;
+  overflow-x: auto;
+  overflow-y: auto;
+  width: 100vw;
+  height: calc(100vh - 160px);
+  position: absolute;
+  top: 160px;
+  left: 0;
+}
+
+#treeContainer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  width: max-content;
+  height: max-content;
+  padding-bottom: 100px;
+}
+
+.children {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.person {
+  margin: 6px;
+  padding: 4px 10px;
+  font-size: 13px;
+  min-width: 130px;
+}
+.children {
+  margin-top: 10px;
+  gap: 10px;
+}
+
+.person .node-id {
+  position: absolute;
+  bottom: 4px;
+  right: 6px;
+  font-size: 10px;
+  color: #ccc;
+  pointer-events: none;
+}
+.person {
+  position: relative;
+}
+
+.person .name {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.banner {
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+</style>
+<link href="favicon.ico" rel="icon" type="image/x-icon"/><style>
+body {
+  background-image: url('sat_logo_faded.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  background-attachment: fixed;
+  background-color: black;
+  opacity: 1;
+}
+</style></head>
+<body>
+<nav style="background: #2e2e2e; padding: 1em; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+<div>
+<a href="index.html" style="margin-right: 1em; color: #9ddcff; text-decoration: none; font-weight: bold;">Home</a>
+<a href="history.html" style="color: #9ddcff; text-decoration: none; font-weight: bold;">Family History</a>
+</div>
+</nav>
+<div style="position:absolute; top:6px; right:160px;">
+<button onclick="expandAll()" style="padding:4px 10px; margin-right:6px;">Expand All</button>
+<button onclick="collapseAll()" style="padding:4px 10px;">Collapse All</button>
+</div>
+<div id="treeWrapper" style="overflow-x:auto; overflow-y:auto;">
+<svg height="0" id="treeLines" style="position:absolute; top:0; left:0; z-index:0; pointer-events: none;" width="0"></svg>
+<div class="tree" id="treeContainer" style="position:relative; z-index:1;"></div>
+</div>
+<script>
+    const data = {"name": "Πατερας Τσιουτσιας Η Κασιμης", "id": "I2", "sex": "M", "children": [{"name": "Τσιουτσιας", "id": "I1", "sex": "M", "children": [{"name": "Γιαννης Τσιουτσιας", "id": "I5", "sex": "M", "children": [{"name": "Δημητρακης Τσιουτσιας", "id": "I6", "sex": "M", "children": [{"name": "Γιαννης Τσιουτσιας", "id": "I11", "sex": "M", "children": [{"name": "Δημητρακης Τσιουτσιας", "id": "I39", "sex": "M", "children": [{"name": "Πανος Τσιουτσιας", "id": "I106", "sex": "M", "children": [{"name": "Αγγελω Τσιουτσιας", "id": "I109", "sex": "F", "children": []}, {"name": "Γιωργης Τσιουτσιας", "id": "I110", "sex": "M", "children": []}, {"name": "Θοδωρης Τσιουτσιας", "id": "I111", "sex": "M", "children": []}, {"name": "Θεωνη Τσιουτσιας", "id": "I112", "sex": "F", "children": []}]}, {"name": "Διονυσης Τσιουτσιας", "id": "I107", "sex": "M", "children": [{"name": "Ελενη Τσιουτσιας", "id": "I113", "sex": "F", "children": []}, {"name": "Δημητρης Τσιουτσιας", "id": "I114", "sex": "M", "children": []}]}, {"name": "Γιωργης Τσιουτσιας", "id": "I108", "sex": "M", "children": []}]}, {"name": "Γιωργης Τσιουτσιας", "id": "I40", "sex": "M", "children": [{"name": "Μητσος Τσιουτσιας", "id": "I84", "sex": "M", "children": [{"name": "Γιωργης Τσιουτσιας", "id": "I88", "sex": "M", "children": []}, {"name": "Σωτηρης Τσιουτσιας", "id": "I89", "sex": "M", "children": []}, {"name": "Θοδωρα Τσιουτσιας", "id": "I90", "sex": "F", "children": []}, {"name": "Αλεξης Τσιουτσιας", "id": "I91", "sex": "M", "children": []}]}, {"name": "Γιαννης Τσιουτσιας", "id": "I85", "sex": "M", "children": [{"name": "Μητσος Τσιουτσιας", "id": "I92", "sex": "M", "children": []}, {"name": "Παναγιωτης Τσιουτσιας", "id": "I93", "sex": "M", "children": []}, {"name": "Τασης Τσιουτσιας", "id": "I94", "sex": "M", "children": []}]}, {"name": "Κωσττης Τσιουτσιας", "id": "I86", "sex": "M", "children": [{"name": "Γιωργης Τσιουτσιας", "id": "I95", "sex": "M", "children": []}, {"name": "Παναγιωτα Τσιουτσιας", "id": "I96", "sex": "F", "children": []}, {"name": "Αντωνια Τσιουτσιας", "id": "I97", "sex": "F", "children": []}]}, {"name": "Νικολας Τσιουτσιας", "id": "I87", "sex": "M", "children": [{"name": "Μητσος Τσιουτσιας", "id": "I98", "sex": "M", "children": []}, {"name": "Γιωργης Τσιουτσιας", "id": "I99", "sex": "M", "children": []}, {"name": "Κωστας Τσιουτσιας", "id": "I100", "sex": "M", "children": []}, {"name": "Παυλος Τσιουτσιας", "id": "I101", "sex": "M", "children": []}, {"name": "Γιαννης Τσιουτσιας", "id": "I102", "sex": "M", "children": []}, {"name": "Τουλα Τσιουτσιας", "id": "I103", "sex": "F", "children": []}, {"name": "Σωτηρω Τσιουτσιας", "id": "I104", "sex": "F", "children": []}, {"name": "Ελενη Τσιουτσιας", "id": "I105", "sex": "F", "children": []}]}]}, {"name": "Νοτης Τσιουτσιας", "id": "I41", "sex": "M", "children": [{"name": "Σταθα Τσιουτσιας", "id": "I65", "sex": "F", "children": []}, {"name": "Θανασης Τσιουτσιας", "id": "I66", "sex": "M", "children": [{"name": "Γιαννης Τσιουτσιας", "id": "I68", "sex": "M", "children": [{"name": "Βασιλω Τσιουτσιας", "id": "I76", "sex": "F", "children": []}, {"name": "Γιωργια Τσιουτσιας", "id": "I77", "sex": "F", "children": []}, {"name": "Γιωργης Τσιουτσιας", "id": "I78", "sex": "M", "children": []}, {"name": "Δημητρης Τσιουτσιας", "id": "I79", "sex": "M", "children": []}]}, {"name": "Μητσος Τσιουτσιας", "id": "I69", "sex": "M", "children": [{"name": "Θανασης Τσιουτσιας", "id": "I80", "sex": "M", "children": []}, {"name": "Σταθης Τσιουτσιας", "id": "I81", "sex": "M", "children": []}]}, {"name": "Γιωργης Τσιουτσιας", "id": "I70", "sex": "M", "children": [{"name": "Παναγιωτης Τσιουτσιας", "id": "I82", "sex": "M", "children": []}, {"name": "Αθηνα Τσιουτσιας", "id": "I83", "sex": "F", "children": []}]}, {"name": "Πανος Τσιουτσιας", "id": "I71", "sex": "M", "children": []}, {"name": "Δημητρα Τσιουτσιας", "id": "I72", "sex": "F", "children": []}, {"name": "Γιωργιτσα Τσιουτσιας", "id": "I73", "sex": "F", "children": []}, {"name": "Σοφια Τσιουτσιας", "id": "I74", "sex": "F", "children": []}, {"name": "Ντινα Τσιουτσιας", "id": "I75", "sex": "F", "children": []}]}, {"name": "Κωνσταντινα Τσιουτσιας", "id": "I67", "sex": "F", "children": []}]}, {"name": "Λιακος Τσιουτσιας", "id": "I42", "sex": "M", "children": [{"name": "Αριστειδης Τσιουτσιας", "id": "I43", "sex": "M", "children": [{"name": "Βασιλω Τσιουτσιας", "id": "I47", "sex": "F", "children": []}, {"name": "Χρηστος Τσιουτσιας", "id": "I48", "sex": "M", "children": []}, {"name": "Δημος Τσιουτσιας", "id": "I49", "sex": "M", "children": []}, {"name": "Θανος Τσιουτσιας", "id": "I50", "sex": "M", "children": []}, {"name": "Παναγιωτα Τσιουτσιας", "id": "I51", "sex": "F", "children": []}, {"name": "Φωτω Τσιουτσιας", "id": "I52", "sex": "F", "children": []}]}, {"name": "Ντρικος Τσιουτσιας", "id": "I44", "sex": "M", "children": [{"name": "Γιωργια Τσιουτσιας", "id": "I53", "sex": "F", "children": []}, {"name": "Αγγελω Τσιουτσιας", "id": "I54", "sex": "F", "children": []}, {"name": "Παναγιωτα Τσιουτσιας", "id": "I55", "sex": "F", "children": []}, {"name": "Σωτηρης Τσιουτσιας", "id": "I56", "sex": "M", "children": []}, {"name": "Ηλιας Τσιουτσιας", "id": "I57", "sex": "M", "children": []}]}, {"name": "Πανος Τσιουτσιας", "id": "I45", "sex": "M", "children": [{"name": "Γιαννης Τσιουτσιας", "id": "I58", "sex": "M", "children": []}, {"name": "Μητσος Τσιουτσιας", "id": "I59", "sex": "M", "children": []}, {"name": "Σωτηρης Τσιουτσιας", "id": "I60", "sex": "M", "children": []}, {"name": "Ντινα Τσιουτσιας", "id": "I61", "sex": "F", "children": []}]}, {"name": "Αντωνης Τσιουτσιας", "id": "I46", "sex": "M", "children": [{"name": "Γιωργης Τσιουτσιας", "id": "I62", "sex": "M", "children": []}, {"name": "Δημητρης Τσιουτσιας", "id": "I63", "sex": "M", "children": []}, {"name": "Λιακος Τσιουτσιας", "id": "I64", "sex": "M", "children": []}]}]}]}, {"name": "Θανασης Τσιουτσιας", "id": "I12", "sex": "M", "children": [{"name": "Κολινος Τσιουτσιας", "id": "I13", "sex": "M", "children": [{"name": "Μητσος Τσιουτσιας", "id": "I14", "sex": "M", "children": []}, {"name": "Πανος Τσιουτσιας", "id": "I15", "sex": "M", "children": []}, {"name": "Θανασης Τσιουτσιας", "id": "I16", "sex": "M", "children": []}, {"name": "Παναγιωτα Τσιουτσιας", "id": "I17", "sex": "F", "children": []}, {"name": "Δημητρης Τσιουτσιας", "id": "I18", "sex": "M", "children": []}]}, {"name": "Γιαννακος Τσιουτσιας", "id": "I19", "sex": "M", "children": [{"name": "Δημητρης Τσιουτσιας", "id": "I20", "sex": "M", "children": [{"name": "Διονυσης Τσιουτσιας", "id": "I22", "sex": "M", "children": []}, {"name": "Παναγιωτης Τσιουτσιας", "id": "I23", "sex": "M", "children": []}, {"name": "Χαραλαμπος Τσιουτσιας", "id": "I24", "sex": "M", "children": []}, {"name": "Ηλιας Τσιουτσιας", "id": "I25", "sex": "M", "children": []}, {"name": "Ντινης Τσιουτσιας", "id": "I26", "sex": "M", "children": []}, {"name": "Νικολας Τσιουτσιας", "id": "I27", "sex": "M", "children": []}]}, {"name": "Γιωργης Τσιουτσιας", "id": "I21", "sex": "M", "children": [{"name": "Σπυρος Τσιουτσιας", "id": "I28", "sex": "M", "children": [{"name": "Μαρια Τσιουτσιας", "id": "I33", "sex": "F", "children": []}, {"name": "Γιωργης Τσιουτσιας", "id": "I34", "sex": "M", "children": []}, {"name": "Φωτουλα Τσιουτσιας", "id": "I35", "sex": "F", "children": []}, {"name": "Σταθης Τσιουτσιας", "id": "I36", "sex": "M", "children": []}, {"name": "Νικος Τσιουτσιας", "id": "I37", "sex": "M", "children": []}, {"name": "Ηλιας Τσιουτσιας", "id": "I38", "sex": "M", "children": []}]}, {"name": "Γιαννης Τσιουτσιας", "id": "I29", "sex": "M", "children": []}, {"name": "Κωστας Τσιουτσιας", "id": "I30", "sex": "M", "children": []}, {"name": "Σταθουλης Τσιουτσιας", "id": "I31", "sex": "M", "children": []}, {"name": "Πανος Τσιουτσιας", "id": "I32", "sex": "M", "children": []}]}]}]}]}, {"name": "Γιωργακης Τσιουτσιας", "id": "I7", "sex": "M", "children": [{"name": "Κωσταντης Τσιουτσιας", "id": "I8", "sex": "M", "children": [{"name": "Γεωργια Τσιουτσιας", "id": "I211", "sex": "F", "children": [{"name": "Σταθουλα Γκοτση (Χρυσοχοη)", "id": "I218", "sex": "F", "children": []}, {"name": "Γρηγορης Γκοτση (Χρυσοχοη)", "id": "I219", "sex": "M", "children": []}, {"name": "Κωνσταντινα Γκοτση (Χρυσοχοη)", "id": "I220", "sex": "F", "children": []}, {"name": "Ιωαννης Γκοτση (Χρυσοχοη)", "id": "I221", "sex": "M", "children": [{"name": "Χρηστος Γκοτσης", "id": "I222", "sex": "M", "children": []}, {"name": "Γιωργος Γκοτσης", "id": "I223", "sex": "M", "children": []}, {"name": "Σωτηρης Γκοτσης", "id": "I224", "sex": "M", "children": []}, {"name": "Μαρια Γκοτσης", "id": "I225", "sex": "F", "children": []}, {"name": "Κωστας Γκοτσης", "id": "I226", "sex": "M", "children": []}, {"name": "Παναγιωτης Γκοτσης", "id": "I227", "sex": "M", "children": []}, {"name": "Γρηγορης Γκοτσης", "id": "I228", "sex": "M", "children": []}]}]}, {"name": "Αναστω Τσιουτσιας", "id": "I212", "sex": "F", "children": [{"name": "Πανος Γκοτση (Χαλκια)", "id": "I229", "sex": "M", "children": [{"name": "Κωστας Γκοτσης", "id": "I237", "sex": "M", "children": []}]}, {"name": "Λιακος Γκοτση (Χαλκια)", "id": "I230", "sex": "M", "children": [{"name": "Διονυσης Γκοτσης", "id": "I238", "sex": "M", "children": []}, {"name": "Δημητρης Γκοτσης", "id": "I239", "sex": "M", "children": []}, {"name": "Γιωργος Γκοτσης", "id": "I240", "sex": "M", "children": []}]}, {"name": "Χρηστος Γκοτση (Χαλκια)", "id": "I231", "sex": "M", "children": [{"name": "Γιαννης Γκοτσης", "id": "I241", "sex": "M", "children": []}, {"name": "Παναγιωτα Γκοτσης", "id": "I242", "sex": "F", "children": []}, {"name": "Αναστω Γκοτσης", "id": "I243", "sex": "F", "children": []}]}]}, {"name": "Τασης Τσιουτσιας", "id": "I213", "sex": "M", "children": []}, {"name": "Παρασκευη Τσιουτσιας", "id": "I214", "sex": "F", "children": []}, {"name": "Λεωνιδας Τσιουτσιας", "id": "I215", "sex": "M", "children": []}, {"name": "Δημητρω Τσιουτσιας", "id": "I216", "sex": "F", "children": []}, {"name": "Δημητρης Τσιουτσιας", "id": "I217", "sex": "M", "children": [{"name": "Χρυσουλα Τσιουτσιας", "id": "I244", "sex": "F", "children": [{"name": "Γιωργης Τσιουτσιας", "id": "I247", "sex": "M", "children": [{"name": "Χρυσουλα Τσιουτσιας", "id": "I248", "sex": "F", "children": []}, {"name": "Αννα Τσιουτσιας", "id": "I249", "sex": "F", "children": []}, {"name": "Φωτουλα Τσιουτσιας", "id": "I250", "sex": "F", "children": []}, {"name": "Τουλα Τσιουτσιας", "id": "I251", "sex": "F", "children": []}, {"name": "Ρηνα Τσιουτσιας", "id": "I252", "sex": "F", "children": []}, {"name": "Ελενη Τσιουτσιας", "id": "I253", "sex": "F", "children": []}, {"name": "Λακης Τσιουτσιας", "id": "I254", "sex": "M", "children": []}]}, {"name": "Σταθουλα Τσιουτσιας", "id": "I268", "sex": "F", "children": [{"name": "Αλεκος Τσιουτσιας", "id": "I269", "sex": "M", "children": []}, {"name": "Τακης Τσιουτσιας", "id": "I270", "sex": "M", "children": []}, {"name": "Σπυρος Τσιουτσιας", "id": "I271", "sex": "M", "children": []}]}]}, {"name": "Λεωνιδας Τσιουτσιας", "id": "I245", "sex": "M", "children": [{"name": "Δημητρης Τσιουτσιας", "id": "I272", "sex": "M", "children": [{"name": "Λεωνιδας Τσιουτσιας", "id": "I274", "sex": "M", "children": []}, {"name": "Θανασης Τσιουτσιας", "id": "I275", "sex": "M", "children": []}, {"name": "Γιωργος Τσιουτσιας", "id": "I276", "sex": "M", "children": []}]}, {"name": "Γιωργης Τσιουτσιας", "id": "I273", "sex": "M", "children": []}]}, {"name": "Σωτηρης Τσιουτσιας", "id": "I246", "sex": "M", "children": [{"name": "Μιμης Τσιουτσιας", "id": "I278", "sex": "M", "children": []}, {"name": "Ελενη Τσιουτσιας", "id": "I279", "sex": "F", "children": [{"name": "Αλεξανδρος Τσιουτσιας", "id": "I280", "sex": "M", "children": []}]}, {"name": "Γιωτα Τσιουτσιας", "id": "I281", "sex": "F", "children": [{"name": "Πλατων Τσιουτσιας", "id": "I286", "sex": "M", "children": []}, {"name": "Σωτηρης Τσιουτσιας", "id": "I287", "sex": "M", "children": []}]}, {"name": "Γεωργια Τσιουτσιας", "id": "I282", "sex": "F", "children": []}, {"name": "Σια Τσιουτσιας", "id": "I283", "sex": "F", "children": [{"name": "Γιωργος Τσιουτσιας", "id": "I284", "sex": "M", "children": []}, {"name": "Κωνσταντινα Τσιουτσιας", "id": "I285", "sex": "F", "children": []}]}]}, {"name": "Θεωνη Τσιουτσιας", "id": "I255", "sex": "F", "children": [{"name": "Γιωργης Τσιουτσιας", "id": "I256", "sex": "M", "children": [{"name": "Θεωνη Τσιουτσιας", "id": "I259", "sex": "F", "children": []}, {"name": "Τουλα Τσιουτσιας", "id": "I260", "sex": "F", "children": []}, {"name": "Βασω Τσιουτσιας", "id": "I261", "sex": "F", "children": []}, {"name": "Παναγιωτα Τσιουτσιας", "id": "I262", "sex": "F", "children": []}, {"name": "Μαρια Τσιουτσιας", "id": "I263", "sex": "F", "children": []}, {"name": "Κωστας Τσιουτσιας", "id": "I264", "sex": "M", "children": []}]}, {"name": "Γιαννης Τσιουτσιας", "id": "I257", "sex": "M", "children": [{"name": "Τακης Τσιουτσιας", "id": "I265", "sex": "M", "children": []}, {"name": "Μαρια Τσιουτσιας", "id": "I266", "sex": "F", "children": []}, {"name": "Ανδρεας Τσιουτσιας", "id": "I267", "sex": "M", "children": []}]}, {"name": "Κωστας Τσιουτσιας", "id": "I258", "sex": "M", "children": []}]}, {"name": "Κωστας Τσιουτσιας", "id": "I277", "sex": "M", "children": [{"name": "Τασης Τσιουτσιας", "id": "I288", "sex": "M", "children": [{"name": "Κωστας Τσιουτσιας", "id": "I294", "sex": "M", "children": []}]}, {"name": "Ελενη Τσιουτσιας", "id": "I289", "sex": "F", "children": [{"name": "Θοδωρης Τσιουτσιας", "id": "I295", "sex": "M", "children": []}]}, {"name": "Τουλα Τσιουτσιας", "id": "I290", "sex": "F", "children": [{"name": "Χρυσουλα Τσιουτσιας", "id": "I296", "sex": "F", "children": []}, {"name": "Μαρια Τσιουτσιας", "id": "I297", "sex": "F", "children": []}]}, {"name": "Δημητρης Τσιουτσιας", "id": "I291", "sex": "M", "children": [{"name": "Γωγω Τσιουτσιας", "id": "I298", "sex": "F", "children": []}, {"name": "Κωστης Τσιουτσιας", "id": "I299", "sex": "M", "children": []}]}, {"name": "Γιωργης Τσιουτσιας", "id": "I292", "sex": "M", "children": []}, {"name": "Σωτηρης Τσιουτσιας", "id": "I293", "sex": "M", "children": []}]}]}]}, {"name": "Τασης Τσιουτσιας", "id": "I9", "sex": "M", "children": [{"name": "Γιωργης Τσιουτσιας", "id": "I115", "sex": "M", "children": [{"name": "Μητσος Τσιουτσιας", "id": "I174", "sex": "M", "children": [{"name": "Παπαδκενα Τσιουτσιας", "id": "I210", "sex": "Other", "children": []}]}, {"name": "Σωκρατης Τσιουτσιας", "id": "I175", "sex": "M", "children": [{"name": "Βασιλης Τσιουτσιας", "id": "I196", "sex": "M", "children": [{"name": "Γιωργος Τσιουτσιας", "id": "I204", "sex": "M", "children": []}, {"name": "Κατερινα Τσιουτσιας", "id": "I205", "sex": "F", "children": []}]}, {"name": "Ξενοφωντας Τσιουτσιας", "id": "I197", "sex": "M", "children": [{"name": "Παναγιωτα Τσιουτσιας", "id": "I206", "sex": "F", "children": []}, {"name": "Κατερινα Τσιουτσιας", "id": "I207", "sex": "F", "children": []}]}, {"name": "Δημητρης Τσιουτσιας", "id": "I198", "sex": "M", "children": [{"name": "Κατερινα Τσιουτσιας", "id": "I208", "sex": "F", "children": []}, {"name": "Σωκρατης Τσιουτσιας", "id": "I209", "sex": "M", "children": []}]}, {"name": "Γιωργης Τσιουτσιας", "id": "I199", "sex": "M", "children": []}, {"name": "Δημητρης Τσιουτσιας", "id": "I200", "sex": "M", "children": []}, {"name": "Παναγιωτα Τσιουτσιας", "id": "I201", "sex": "F", "children": []}, {"name": "Δημητρα Τσιουτσιας", "id": "I202", "sex": "F", "children": []}, {"name": "Αγλαια Τσιουτσιας", "id": "I203", "sex": "F", "children": []}]}, {"name": "Αρετη Τσιουτσιας", "id": "I176", "sex": "F", "children": []}, {"name": "Μαρια Τσιουτσιας", "id": "I177", "sex": "F", "children": []}, {"name": "Τασης Τσιουτσιας", "id": "I178", "sex": "M", "children": [{"name": "Αλεξης Τσιουτσιας", "id": "I179", "sex": "M", "children": []}, {"name": "Γιωργης Τσιουτσιας", "id": "I180", "sex": "M", "children": [{"name": "Γιωργια Τσιουτσιας", "id": "I181", "sex": "F", "children": []}]}, {"name": "Γιαννης Τσιουτσιας", "id": "I182", "sex": "M", "children": []}, {"name": "Βασιλης Τσιουτσιας", "id": "I183", "sex": "M", "children": [{"name": "Τασης Τσιουτσιας", "id": "I184", "sex": "M", "children": []}, {"name": "Δεσποινα Τσιουτσιας", "id": "I185", "sex": "F", "children": []}, {"name": "Τουλα Τσιουτσιας", "id": "I186", "sex": "F", "children": []}, {"name": "Τζιμης Τσιουτσιας", "id": "I187", "sex": "M", "children": []}, {"name": "Σταθουλα Τσιουτσιας", "id": "I188", "sex": "F", "children": []}, {"name": "Κωστας Τσιουτσιας", "id": "I189", "sex": "M", "children": []}]}, {"name": "Χρηστος Τσιουτσιας", "id": "I190", "sex": "M", "children": [{"name": "Γιωργια Τσιουτσιας", "id": "I191", "sex": "F", "children": []}, {"name": "Φωτης Τσιουτσιας", "id": "I192", "sex": "M", "children": []}]}, {"name": "Δημητρω Τσιουτσιας", "id": "I193", "sex": "F", "children": []}, {"name": "Παναγιωτα Τσιουτσιας", "id": "I194", "sex": "F", "children": []}, {"name": "Κωστας Τσιουτσιας", "id": "I195", "sex": "M", "children": []}]}]}, {"name": "Ζιωτης Τσιουτσιας", "id": "I116", "sex": "M", "children": [{"name": "Καλομοιρα Τσιουτσιας", "id": "I124", "sex": "F", "children": []}, {"name": "Γιωργος Τσιουτσιας", "id": "I125", "sex": "M", "children": [{"name": "Αριστειδης Τσιουτσιας", "id": "I129", "sex": "M", "children": [{"name": "Αλεκος Τσιουτσιας", "id": "I142", "sex": "M", "children": []}, {"name": "Νοντας Τσιουτσιας", "id": "I143", "sex": "M", "children": [{"name": "Αριστειδης Τσιουτσιας", "id": "I163", "sex": "M", "children": []}, {"name": "Ιωαννα Τσιουτσιας", "id": "I164", "sex": "F", "children": []}, {"name": "Δημητρης Τσιουτσιας", "id": "I165", "sex": "", "children": []}]}, {"name": "Νικη Τσιουτσιας", "id": "I144", "sex": "F", "children": []}, {"name": "Χρυσουλα Τσιουτσιας", "id": "I145", "sex": "F", "children": []}, {"name": "Θυμιος Τσιουτσιας", "id": "I146", "sex": "M", "children": []}, {"name": "Γιωργος Τσιουτσιας", "id": "I147", "sex": "M", "children": [{"name": "Αριστειδης Τσιουτσιας", "id": "I161", "sex": "M", "children": []}, {"name": "Νικος Τσιουτσιας", "id": "I162", "sex": "", "children": []}]}, {"name": "Κωστας Τσιουτσιας", "id": "I148", "sex": "M", "children": [{"name": "Αριστειδης Τσιουτσιας", "id": "I151", "sex": "M", "children": [{"name": "Νικος Τσιουτσιας", "id": "I154", "sex": "M", "children": [{"name": "Μαρια Χριστινα Τσιουτσιας", "id": "I232", "sex": "F", "children": []}, {"name": "Ηλιας Τσιουτσιας", "id": "I233", "sex": "M", "children": []}, {"name": "Ερμιονη Κασσανδρα Τσιουτσιας", "id": "I234", "sex": "F", "children": []}]}, {"name": "Κωνσταντινος Τσιουτσιας", "id": "I155", "sex": "M", "children": [{"name": "Αρης Τσιουτσιας", "id": "I235", "sex": "M", "children": []}, {"name": "Μιραντα Τσιουτσιας", "id": "I236", "sex": "F", "children": []}]}]}, {"name": "Δημητρης Τσιουτσιας", "id": "I152", "sex": "M", "children": [{"name": "Κωνσταντινος Τσιουτσιας", "id": "I156", "sex": "M", "children": []}, {"name": "Δημητρης Τσιουτσιας", "id": "I157", "sex": "M", "children": []}]}, {"name": "Χρυσουλα Τσιουτσιας", "id": "I153", "sex": "F", "children": []}]}, {"name": "Γρηγορης Τσιουτσιας", "id": "I149", "sex": "M", "children": [{"name": "Γιωργος Τσιουτσιας", "id": "I158", "sex": "M", "children": []}, {"name": "Χρηστος Τσιουτσιας", "id": "I159", "sex": "M", "children": []}, {"name": "Χρυσουλα Τσιουτσιας", "id": "I160", "sex": "F", "children": []}]}, {"name": "Δημητρουλα Τσιουτσιας", "id": "I150", "sex": "F", "children": []}]}, {"name": "Πανος Τσιουτσιας", "id": "I130", "sex": "M", "children": [{"name": "Αθανασια Τσιουτσιας", "id": "I166", "sex": "F", "children": []}, {"name": "Γιωργος Τσιουτσιας", "id": "I167", "sex": "M", "children": []}]}, {"name": "Ελενη Τσιουτσιας", "id": "I131", "sex": "F", "children": []}, {"name": "Κωνσταντινα Τσιουτσιας", "id": "I132", "sex": "F", "children": []}, {"name": "Ευθυμια Τσιουτσιας", "id": "I133", "sex": "F", "children": []}]}, {"name": "Ελενη Τσιουτσιας", "id": "I126", "sex": "F", "children": []}, {"name": "Δημητρα Τσιουτσιας", "id": "I127", "sex": "F", "children": []}, {"name": "Πετρος Τσιουτσιας", "id": "I128", "sex": "M", "children": [{"name": "Γιωργης Τσιουτσιας", "id": "I134", "sex": "M", "children": [{"name": "Πετρος Τσιουτσιας", "id": "I168", "sex": "M", "children": []}, {"name": "Σαββας Τσιουτσιας", "id": "I169", "sex": "M", "children": []}]}, {"name": "Αλκιβιαδης Τσιουτσιας", "id": "I135", "sex": "M", "children": [{"name": "Πετρος Τσιουτσιας", "id": "I170", "sex": "M", "children": []}, {"name": "Δημητρα Τσιουτσιας", "id": "I171", "sex": "F", "children": []}]}, {"name": "Πανος Τσιουτσιας", "id": "I136", "sex": "M", "children": [{"name": "Παναγιωτης Τσιουτσιας", "id": "I172", "sex": "M", "children": []}, {"name": "Παναγιωτα Τσιουτσιας", "id": "I173", "sex": "F", "children": []}]}, {"name": "Ευσταθια Τσιουτσιας", "id": "I137", "sex": "F", "children": []}, {"name": "Χρυσαντω Τσιουτσιας", "id": "I138", "sex": "F", "children": []}, {"name": "Γιαννουλα Τσιουτσιας", "id": "I139", "sex": "F", "children": []}, {"name": "Νικολετα Τσιουτσιας", "id": "I140", "sex": "F", "children": []}, {"name": "Ντινα Τσιουτσιας", "id": "I141", "sex": "F", "children": []}]}]}]}, {"name": "Γιαννακης Τσιουτσιας", "id": "I10", "sex": "M", "children": [{"name": "Παναγος (ΓΚΛΙΑΤΑ) Τσιουτσιας", "id": "I117", "sex": "M", "children": []}, {"name": "Γακες Τσιουτσιας", "id": "I118", "sex": "M", "children": [{"name": "Γιαννακης Τσιουτσιας", "id": "I119", "sex": "M", "children": []}, {"name": "Θανασω Τσιουτσιας", "id": "I120", "sex": "F", "children": []}, {"name": "Μαρια Τσιουτσιας", "id": "I121", "sex": "F", "children": [{"name": "Λιακος Τσιουτσιας", "id": "I122", "sex": "M", "children": [{"name": "Μαρια Τσιουτσιας", "id": "I123", "sex": "F", "children": []}]}]}]}]}]}]}]}, {"name": "Γιαννης Τσιουτσιας", "id": "I3", "sex": "M", "children": []}, {"name": "Γιωργης Τσιουτσιας", "id": "I4", "sex": "M", "children": []}]};
+
+    function createPersonBox(person) {
+      const div = document.createElement("div");
+  const nameParts = person.name.split(" ");
+  const nameBlock = document.createElement("div");
+  nameBlock.className = "name";
+  nameBlock.innerHTML = `<div>${nameParts.slice(0, -1).join(" ")}</div><div>${nameParts.slice(-1).join(" ")}</div>`;
+  div.appendChild(nameBlock);
+  const idTag = document.createElement("span");
+  idTag.className = "node-id";
+  idTag.textContent = person.id || "";
+  div.appendChild(idTag);
+
+  
+  const idTagSpan = document.createElement("span");
+  idTagSpan.className = "node-id";
+  idTagSpan.textContent = person.id || "";
+  div.appendChild(idTagSpan);
+
+  
+  
+
+      div.className = "person" + (person.gender === 'M' ? " male" : person.gender === 'F' ? " female" : "");
+      
+  
+  
+    
+  
+      div.onclick = () => div.classList.toggle("expanded");
+      return div;
+    }
+
+    function buildTree(person) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "node-wrapper";
+
+      const personBox = createPersonBox(person);
+      wrapper.appendChild(personBox);
+
+      if (person.children && person.children.length > 0) {
+        const childrenWrapper = document.createElement("div");
+        childrenWrapper.className = "children-container";
+
+        const row = document.createElement("div");
+        row.className = "children";
+        person.children.forEach(child => {
+          row.appendChild(buildTree(child));
+        });
+
+        childrenWrapper.appendChild(row);
+        wrapper.appendChild(childrenWrapper);
+      }
+
+      return wrapper;
+    }
+
+    document.getElementById("treeContainer").appendChild(buildTree(data));
+
+setTimeout(() => {
+  drawLines();
+  const treeWrapper = document.getElementById("treeWrapper");
+  const tree = document.getElementById("treeContainer");
+  const wrapperRect = treeWrapper.getBoundingClientRect();
+  const treeRect = tree.getBoundingClientRect();
+  if (treeRect.width > wrapperRect.width) {
+    if (tree.querySelector(".person.expanded")) {
+    treeWrapper.scrollLeft = (tree.scrollWidth - wrapperRect.width) / 2;
+}
+  }
+}, 300);
+
+  
+    const svg = document.getElementById("treeLines");
+const treeWrapper = document.getElementById("treeWrapper");
+
+    ("resize", drawLines);
+    
+    
+
+("resize", drawLines);
+
+
+
+("resize", drawLines);
+
+
+
+function expandAll() {
+  document.querySelectorAll(".person").forEach(p => {
+    if (!p.classList.contains("expanded")) p.classList.add("expanded");
+  });
+  
+}
+
+function collapseAll() {
+  document.querySelectorAll(".person.expanded").forEach(p => {
+    p.classList.remove("expanded");
+  });
+  
+}
+
+("resize", drawLines);
+
+
+("resize", drawLines);
+
+
+("resize", drawLines);
+
+
+
+
+function triggerDrawLines(delay = 300) {
+  if (drawLinesTimer) clearTimeout(drawLinesTimer);
+  drawLinesTimer = setTimeout(() => {
+    drawLines();
+    drawLinesTimer = null;
+  }, delay);
+}
+
+window.addEventListener("resize", () => triggerDrawLines(200));
+document.addEventListener("click", () => triggerDrawLines(300));
+
+const observer = new MutationObserver(() => {
+  triggerDrawLines(150);
+});
+
+observer.observe(document.getElementById("treeContainer"), {
+  attributes: true,
+  childList: true,
+  subtree: true
+});
+
+function drawLines() {
+  const svg = document.getElementById("treeLines");
+  const treeWrapper = document.getElementById("treeWrapper");
+  svg.innerHTML = "";
+
+  const svgRect = svg.getBoundingClientRect();
+
+  const people = document.querySelectorAll(".person.expanded");
+
+  svg.setAttribute("width", treeWrapper.scrollWidth);
+  svg.setAttribute("height", treeWrapper.scrollHeight);
+
+  people.forEach(parentBox => {
+    const parentRect = parentBox.getBoundingClientRect();
+    const childrenRow = parentBox.nextElementSibling?.querySelector(".children");
+    if (!childrenRow || childrenRow.offsetParent === null) return;
+
+    childrenRow.childNodes.forEach(childWrapper => {
+      const childBox = childWrapper.querySelector(".person");
+      if (!childBox || childBox.offsetParent === null) return;
+
+      const childRect = childBox.getBoundingClientRect();
+
+      const x1 = parentRect.left + parentRect.width / 2 - svgRect.left + treeWrapper.scrollLeft;
+      const y1 = parentRect.bottom - svgRect.top + treeWrapper.scrollTop;
+
+      const x2 = childRect.left + childRect.width / 2 - svgRect.left + treeWrapper.scrollLeft;
+      const y2 = childRect.top - svgRect.top + treeWrapper.scrollTop;
+
+      const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      line.setAttribute("x1", x1);
+      line.setAttribute("y1", y1);
+      line.setAttribute("x2", x2);
+      line.setAttribute("y2", y2);
+      line.setAttribute("stroke", "#888");
+      line.setAttribute("stroke-width", "2");
+      svg.appendChild(line);
+    });
+  });
+}
+
+let drawLinesTimer = null;
+function triggerDrawLines(delay = 300) {
+  if (drawLinesTimer) clearTimeout(drawLinesTimer);
+  drawLinesTimer = setTimeout(() => {
+    drawLines();
+    drawLinesTimer = null;
+  }, delay);
+}
+window.addEventListener("resize", () => triggerDrawLines(200));
+document.addEventListener("click", () => triggerDrawLines(300));
+
+function toggleTranslation() {
+  const el = document.getElementById("bannerText");
+  if (!el.dataset.translated) {
+    el.dataset.original = el.innerText;
+    el.innerText = `THE THREE BROTHERS TSIOUTSIAS or KASIMIS
+The Aga invited them to come to his house at the castle of Mila.
+Only the first and second went. The Aga captured them and lashed them from the neck down to the tail, then released them.
+The first brother died from bleeding before reaching Kouvela, where they lived.
+The second did not die from this, but from an infection. He was bitten by a wildcat years later while carrying a stolen cow and stopped to drink water from a spring.
+(From him descends Giorgakis the Kontovounisios.)
+The third brother, short and strong, killed the Aga for revenge. We descend from him.
+
+Designed by Giorgos K. Konstantopoulos, September 1978.`;
+    el.dataset.translated = "true";
+  } else {
+    el.innerText = el.dataset.original;
+    delete el.dataset.translated;
+  }
+}
+</script>
+</body>
+</html>
